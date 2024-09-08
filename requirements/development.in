@@ -7,5 +7,6 @@ freezegun
 mypy
 types-requests
 typing-extensions
+types-cachetools
 types-PyYAML
 ruff>=0.1.2
