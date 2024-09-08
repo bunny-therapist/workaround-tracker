@@ -3,7 +3,11 @@ from __future__ import annotations
 import functools
 import logging
 import os
-from typing import TYPE_CHECKING, Iterable
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:  # pragma: no cover
+    from collections.abc import Iterable
+
 
 import cachetools
 from cachetools.keys import hashkey

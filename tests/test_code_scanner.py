@@ -246,9 +246,10 @@ def test_code_scanner_cache__write_to_json_file(
 ) -> None:
     output_file = tmp_path / "cache.json"
     cache.write_to_json_file(output_file)
-    with output_file.open() as written_file, (
-        CACHE_PATH / expected_matching_file
-    ).open() as matching_file:
+    with (
+        output_file.open() as written_file,
+        (CACHE_PATH / expected_matching_file).open() as matching_file,
+    ):
         assert written_file.read().replace(r"\\", "/") == matching_file.read().replace(
             r"\\", "/"
         )
