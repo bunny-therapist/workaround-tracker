@@ -1,0 +1,144 @@
+[project]
+name = "workaround-tracker"
+description = "Track workarounds for issues using code comments and check whether they are still necessary."
+readme = "README.md"
+authors = [
+  {name="Anton Vikström"}
+]
+license = {file = "LICENSE"}
+urls = {repo = "https://github.com/bunny-therapist/workaround-tracker"}
+requires-python = ">=3.8"
+dynamic = ["version", "dependencies"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "License :: OSI Approved :: Apache Software License",
+]
+
+[project.scripts]
+workaround-tracker = "workaround_tracker.main:check"
+
+[build-system]
+requires = ["setuptools>=66.1.0", "wheel", "setuptools_scm[toml]>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.dynamic]
+dependencies = {file = "requirements/base.in"}
+
+[tool.setuptools_scm]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+namespaces = false
+
+[tool.coverage.run]
+branch = true
+omit = [
+  "*/.venv/*",
+  "*/venv/*",
+  "test/*",
+]
+
+[tool.coverage.report]
+show_missing = true
+fail_under = 100
+
+[tool.pytest.ini_options]
+addopts = "--cov='workaround_tracker' --random-order"
+minversion = "6.0"
+usefixtures = ["requests_mock"]
+testpaths = ["tests"]
+
+[tool.mypy]
+files = ["src", "tests"]
+exclude = "tests/data/code/.*"
+warn_no_return = true
+warn_return_any = true
+warn_unused_configs = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+warn_unreachable = true
+check_untyped_defs = true
+disallow_any_generics = true
+disallow_subclassing_any = true
+disallow_untyped_calls = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+no_implicit_reexport = true
+strict_equality = true
+extra_checks = true
+
+[tool.ruff]
+src = ["src", "tests"]
+exclude = ["tests/data/code"]
+
+[tool.ruff.lint]
+select = [
+  "E",   # pycodestyle
+  "F",   # pyflakes
+  "UP",  # pyupgrade
+  "S",   # flake8-bandit
+  "D",   # pydocstyle
+  "PT",  # flake8-pytest-style
+  "I",   # isort
+  "RUF", # Ruff-specific rules
+  "PTH", # flake8-use-pathlib
+  "ERA", # eradicate
+  "PL",  # pylint
+  "FBT", # flake8-boolean-trap
+  "B",   # flake8-bugbear
+  "A",   # flake8-builtins
+  "ISC", # flake8-implicit-str-concat
+  "INP", # flake8-no-pep420
+  "SLF", # flake8-self
+  "SIM", # flake8-simplify
+  "TID", # flake8-tidy-imports
+  "ARG", # flake8-unused-arguments
+  "TRY", # tryceratops
+  "FLY",  # flynt
+  "RSE",  # flake8-raise
+  "RET",  # flake8-return
+  "FIX",  # flake8-fixme
+  "Q",    # flake8-quotes
+  "C4",   # flake8-comprehensions
+  "DTZ",  # flake8-datetimez
+  "T10",  # flake8-debugger
+  "T20",  # flake8-print
+  "TCH",  # flake8-type-checking
+]
+ignore = [
+  "ISC001",
+  "D100", "D102", "D103", "D104", "D105", "D107",
+  "PTH123",
+  "TRY003", "TRY301",
+  "UP032",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = [
+  "S101", "S105",
+  "D103",
+  "FBT001",
+  "SLF001",
+  "PLR2004", "PLR0913",
+  "ARG001",
+  "RUF018",
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.flake8-pytest-style]
+fixture-parentheses = false
+mark-parentheses = false
+parametrize-names-type = "csv"
+parametrize-values-type = "list"
+
+[tool.ruff.lint.flake8-tidy-imports]
+ban-relative-imports = "parents"

@@ -1,0 +1,10 @@
+scanners:
+  - "python"
+issue_trackers:
+  - kind: "github"
+    authentication:
+      env: "GITHUB_TOKEN"
+  - kind: "github"
+    host: "local.github"
+    authentication:
+      env: "LOCAL_GITHUB_TOKEN"

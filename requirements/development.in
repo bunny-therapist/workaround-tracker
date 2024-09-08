@@ -1,0 +1,11 @@
+-r base.in
+pytest
+pytest-cov
+pytest-random-order
+pytest-integration
+freezegun
+mypy
+types-requests
+typing-extensions
+types-PyYAML
+ruff>=0.1.2
