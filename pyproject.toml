@@ -47,7 +47,7 @@ show_missing = true
 fail_under = 100
 
 [tool.pytest.ini_options]
-addopts = "--cov='workaround_tracker' --random-order"
+addopts = "--cov='workaround_tracker' --random-order -v"
 minversion = "6.0"
 usefixtures = ["requests_mock"]
 testpaths = ["tests"]
