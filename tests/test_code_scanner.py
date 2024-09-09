@@ -216,8 +216,7 @@ CACHE_0_CONTENT = CodeScannerCache(
         ),
     }
 )
-CACHE_1_CONTENT = CACHE_0_CONTENT
-CACHE_2_CONTENT = CodeScannerCache()
+CACHE_1_CONTENT = CodeScannerCache()
 
 
 @pytest.mark.parametrize(
@@ -225,7 +224,6 @@ CACHE_2_CONTENT = CodeScannerCache()
     [
         ("cache_0.json", CACHE_0_CONTENT),
         ("cache_1.json", CACHE_1_CONTENT),
-        ("cache_2.json", CACHE_2_CONTENT),
     ],
 )
 def test_code_scanner_cache__from_json(
@@ -250,7 +248,7 @@ def test_code_scanner_cache__write_to_json_file(
         output_file.open() as written_file,
         (CACHE_PATH / expected_matching_file).open() as matching_file,
     ):
-        assert written_file.read() == matching_file.read().replace(r"\\", "/")
+        assert written_file.read() == matching_file.read()
 
 
 @pytest.mark.integration_test

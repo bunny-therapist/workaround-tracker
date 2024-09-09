@@ -1,1 +1,1 @@
-{"files": {"tests/data/code.py": {"workarounds": [{"file": "tests/data/code.py", "line": 3, "url": "https://github.com/litestar-org/litestar/issues/3630"}, {"file": "tests/data/code.py", "line": 4, "url": "https://github.com/mam-dev/security-constraints/issues/32"}], "timestamp": 1724923993.2067041}, "tests/test_code_scanner.py": {"workarounds": [], "timestamp": 1724937291.112679}}}
+{"files": {}}
