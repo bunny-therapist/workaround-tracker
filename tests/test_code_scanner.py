@@ -199,19 +199,19 @@ CACHE_0_CONTENT = CodeScannerCache(
         Path("tests/data/code.py"): FileScanCache(
             workarounds=[
                 Workaround(
-                    file=Path("tests/data/code.py"),
+                    file=Path("tests") / "data" / "code.py",
                     line=3,
                     url="https://github.com/litestar-org/litestar/issues/3630",
                 ),
                 Workaround(
-                    file=Path("tests/data/code.py"),
+                    file=Path("tests") / "data" / "code.py",
                     line=4,
                     url="https://github.com/mam-dev/security-constraints/issues/32",
                 ),
             ],
             timestamp=1724923993.2067041,
         ),
-        Path("tests/test_code_scanner.py"): FileScanCache(
+        Path("tests") / "test_code_scanner.py": FileScanCache(
             workarounds=[], timestamp=1724937291.112679
         ),
     }
