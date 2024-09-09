@@ -196,7 +196,7 @@ def test_code_scanner_manager__scan_path__cached(
 
 CACHE_0_CONTENT = CodeScannerCache(
     files={
-        Path("tests/data/code.py"): FileScanCache(
+        Path("tests") / "data" / "code.py": FileScanCache(
             workarounds=[
                 Workaround(
                     file=Path("tests") / "data" / "code.py",
@@ -250,9 +250,7 @@ def test_code_scanner_cache__write_to_json_file(
         output_file.open() as written_file,
         (CACHE_PATH / expected_matching_file).open() as matching_file,
     ):
-        assert written_file.read().replace(r"\\", "/") == matching_file.read().replace(
-            r"\\", "/"
-        )
+        assert written_file.read() == matching_file.read().replace(r"\\", "/")
 
 
 @pytest.mark.integration_test

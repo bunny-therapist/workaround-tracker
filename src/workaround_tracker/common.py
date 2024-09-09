@@ -1,6 +1,6 @@
 import sys
-from pathlib import Path
-from typing import Any, Literal
+from pathlib import Path, PurePath
+from typing import Annotated, Any, Literal
 
 import pydantic
 import yaml
@@ -12,6 +12,15 @@ else:  # pragma: no cover
 
 WORKAROUND_COMMENT_PREFIX = "WORKAROUND"
 CACHE_FILE_NAME = ".workaround-tracker-cache.json"
+
+
+_PathSerializer = pydantic.PlainSerializer(
+    func=PurePath.as_posix,
+    return_type=str,
+    when_used="always",
+)
+
+ConsistentPath = Annotated[Path, _PathSerializer]
 
 
 class WorkaroundTrackerError(Exception):
@@ -28,7 +37,7 @@ class Workaround(pydantic.BaseModel):
 
     """
 
-    file: Path
+    file: ConsistentPath
     line: int
     url: str
 

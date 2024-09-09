@@ -19,7 +19,7 @@ if TYPE_CHECKING:  # pragma: no cover
     else:
         from typing_extensions import Self
 
-from workaround_tracker.common import Workaround, WorkaroundTrackerError
+from workaround_tracker.common import ConsistentPath, Workaround, WorkaroundTrackerError
 
 from ._python import PythonCodeScanner
 
@@ -40,7 +40,7 @@ class FileScanCache(pydantic.BaseModel):
 
 
 class CodeScannerCache(pydantic.BaseModel):
-    files: dict[Path, FileScanCache] = pydantic.Field(default_factory=dict)
+    files: dict[ConsistentPath, FileScanCache] = pydantic.Field(default_factory=dict)
 
     @classmethod
     def _from_dict(cls: type[Self], d: dict[str, Any]) -> Self:
