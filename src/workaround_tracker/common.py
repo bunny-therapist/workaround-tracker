@@ -51,15 +51,19 @@ class AuthenticationConfig(pydantic.BaseModel):
 class IssueTrackerConfig(pydantic.BaseModel):
     """Configuration for a single issue tracker, e.g., a github instance."""
 
-    kind: Literal["github"]
+    kind: Literal["github", "gitlab"]
     host: str = pydantic.Field(pattern=r"[^/]+")
     authentication: AuthenticationConfig
 
     @pydantic.model_validator(mode="before")
     @classmethod
     def default_host(cls, data: Any) -> Any:
-        if isinstance(data, dict) and data.get("kind") == "github":
-            data.setdefault("host", "github.com")
+        if isinstance(data, dict):
+            kind = data.get("kind")
+            if kind == "github":
+                data.setdefault("host", "github.com")
+            elif kind == "gitlab":
+                data.setdefault("host", "gitlab.com")
         return data  # pragma: no cover
 
 

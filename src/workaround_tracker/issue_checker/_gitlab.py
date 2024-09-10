@@ -20,10 +20,8 @@ from ._base import IssueChecker
 
 LOGGER = logging.getLogger(__name__)
 
-GITHUB_MEDIA_TYPE = "application/vnd.github+json"
 
-
-class GithubIssueChecker(IssueChecker):
+class GitlabIssueChecker(IssueChecker):
     def __init__(self, url: str, token: str) -> None:
         split_result = urllib.parse.urlsplit(url)
         self._scheme = split_result.scheme
@@ -34,15 +32,14 @@ class GithubIssueChecker(IssueChecker):
     def _session(self) -> requests.Session:
         session = requests.Session()
         session.headers = {
-            "Accept": GITHUB_MEDIA_TYPE,
-            "Bearer": self._token,
+            "PRIVATE-TOKEN": self._token,
         }
         atexit.register(session.close)
         return session
 
     def is_issue_resolved(self, url: str) -> bool | None:
         LOGGER.debug(
-            "Checking if the url %s is a Github URL that this IssueChecker can handle",
+            "Checking if the url %s is a Gitlab URL that this IssueChecker can handle",
             url,
         )
         split_result = urllib.parse.urlsplit(url)
@@ -51,13 +48,17 @@ class GithubIssueChecker(IssueChecker):
             LOGGER.debug("... it is not (%s != %s)", split_result.netloc, self._netloc)
             return None
 
-        LOGGER.debug("URL %s has a matching netloc - will query Github", url)
+        LOGGER.debug("URL %s has a matching netloc - will query Gitlab", url)
+        project_path, issue_id = split_result.path.replace(
+            "/-/issues", "/issues"
+        ).rsplit("/issues/", 1)
+        encoded_project_path = urllib.parse.quote(project_path.lstrip("/"), safe="")
         response = self._session.get(
             url=urllib.parse.urlunsplit(
                 (
                     self._scheme,
-                    f"api.{split_result.netloc}",
-                    f"/repos{split_result.path}",
+                    split_result.netloc,
+                    f"/api/v4/projects/{encoded_project_path}/issues/{issue_id}",
                     None,
                     None,
                 )

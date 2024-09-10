@@ -29,6 +29,7 @@ from workaround_tracker.common import (
 )
 
 from ._github import GithubIssueChecker
+from ._gitlab import GitlabIssueChecker
 
 LOGGER = logging.getLogger(__name__)
 
@@ -52,11 +53,19 @@ class IssueCheckerManager:
     def from_config(cls: type[Self], configs: Iterable[IssueTrackerConfig]) -> Self:
         issue_checkers: list[IssueChecker] = []
         for config in configs:
+            token = os.environ[config.authentication.env]
             if config.kind == "github":
                 issue_checkers.append(
                     GithubIssueChecker(
                         url=f"https://{config.host}",
-                        token=os.environ[config.authentication.env],
+                        token=token,
+                    )
+                )
+            elif config.kind == "gitlab":
+                issue_checkers.append(
+                    GitlabIssueChecker(
+                        url=f"https://{config.host}",
+                        token=token,
                     )
                 )
             else:  # pragma: no cover

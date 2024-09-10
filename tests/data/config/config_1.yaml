@@ -1,0 +1,10 @@
+scanners:
+  - "python"
+issue_trackers:
+  - kind: "gitlab"
+    authentication:
+      env: "GITLAB_TOKEN"
+  - kind: "gitlab"
+    host: "local.gitlab"
+    authentication:
+      env: "LOCAL_GITLAB_TOKEN"

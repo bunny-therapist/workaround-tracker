@@ -262,6 +262,11 @@ def test_code_scanner__integration() -> None:
             url="https://github.com/litestar-org/litestar/issues/3630",
         ),
         Workaround(
+            file=PYTHON_FILE_IN_ROOT,
+            line=5,
+            url="https://gitlab.com/gitlab-org/gitlab-runner/-/issues/37983",
+        ),
+        Workaround(
             file=PYTHON_FILE_IN_SUBDIR,
             line=3,
             url="https://github.com/mam-dev/security-constraints/issues/32",

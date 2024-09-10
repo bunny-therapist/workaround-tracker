@@ -213,22 +213,32 @@ def test_check__integration(
     requests_mock: RequestsMock, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     github_token = "gh_my_token"
+    gitlab_token = "gl_my_token"
     monkeypatch.setenv("GITHUB_TOKEN", github_token)
     monkeypatch.setenv("LOCAL_GITHUB_TOKEN", github_token)
-    request_headers = {
+    monkeypatch.setenv("GITLAB_TOKEN", gitlab_token)
+    github_request_headers = {
         "Accept": GITHUB_MEDIA_TYPE,
         "Bearer": github_token,
+    }
+    gitlab_request_headers = {
+        "PRIVATE-TOKEN": gitlab_token,
     }
     requests_mock.get(
         "https://api.github.com/repos/litestar-org/litestar/issues/3630",
         json={"state": "closed"},
-        request_headers=request_headers,
+        request_headers=github_request_headers,
         headers={"Content-Type": GITHUB_MEDIA_TYPE},
+    )
+    requests_mock.get(
+        "https://gitlab.com/api/v4/projects/gitlab-org%2Fgitlab-runner/issues/37983",
+        json={"state": "closed"},
+        request_headers=gitlab_request_headers,
     )
     requests_mock.get(
         "https://api.github.com/repos/mam-dev/security-constraints/issues/32",
         json={"state": "open"},
-        request_headers=request_headers,
+        request_headers=github_request_headers,
         headers={"Content-Type": GITHUB_MEDIA_TYPE},
     )
     config_file = Path(__file__).parent / "data" / "config" / "config_0.yaml"

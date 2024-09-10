@@ -8,3 +8,6 @@ issue_trackers:
     host: "local.github"
     authentication:
       env: "LOCAL_GITHUB_TOKEN"
+  - kind: "gitlab"
+    authentication:
+      env: "GITLAB_TOKEN"

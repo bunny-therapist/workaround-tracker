@@ -16,6 +16,7 @@ from workaround_tracker.issue_checker._github import (
     GITHUB_MEDIA_TYPE,
     GithubIssueChecker,
 )
+from workaround_tracker.issue_checker._gitlab import GitlabIssueChecker
 from workaround_tracker.issue_checker._manager import UnknownIssueResolutionError
 
 GITHUB_HOSTNAME = "mock.github"
@@ -23,16 +24,33 @@ GITHUB_URL = f"https://{GITHUB_HOSTNAME}"
 GITHUB_TOKEN = "gh_token"
 GITHUB_ISSUE_URL = "https://mock.github/org/proj/issues/1234"
 GITHUB_API_ISSUE_URL = "https://api.mock.github/repos/org/proj/issues/1234"
-GITHUB_AUTHENTICATION_ENV_VAR = "ENV_VAR"
+GITHUB_AUTHENTICATION_ENV_VAR = "GITHUB_AUTH_TOKEN"
 ISSUE_TRACKER_CONFIG_GITHUB = IssueTrackerConfig(
     kind="github",
     host=GITHUB_HOSTNAME,
     authentication=AuthenticationConfig(env=GITHUB_AUTHENTICATION_ENV_VAR),
 )
 WORKAROUND = Workaround(file=Path("file"), line=47, url=GITHUB_ISSUE_URL)
-REQUEST_HEADERS = {
+GITHUB_REQUEST_HEADERS = {
     "Accept": GITHUB_MEDIA_TYPE,
     "Bearer": GITHUB_TOKEN,
+}
+
+GITLAB_HOSTNAME = "mock.gitlab"
+GITLAB_URL = f"https://{GITLAB_HOSTNAME}"
+GITLAB_ISSUE_URL = f"https://{GITLAB_HOSTNAME}/group/proj/issues/64"
+GITLAB_API_ISSUE_URL = (
+    f"https://{GITLAB_HOSTNAME}/api/v4/projects/group%2Fproj/issues/64"
+)
+GITLAB_TOKEN = "gl_token"
+GITLAB_AUTHENTICATION_ENV_VAR = "GITLAB_AUTH_TOKEN"
+ISSUE_TRACKER_CONFIG_GITLAB = IssueTrackerConfig(
+    kind="gitlab",
+    host=GITLAB_HOSTNAME,
+    authentication=AuthenticationConfig(env=GITLAB_AUTHENTICATION_ENV_VAR),
+)
+GITLAB_REQUEST_HEADERS = {
+    "PRIVATE-TOKEN": GITLAB_TOKEN,
 }
 
 
@@ -50,6 +68,7 @@ def test_github_issue_checker__is_issue_resolved__true(
     requests_mock.get(
         GITHUB_API_ISSUE_URL,
         json={"state": "closed"},
+        request_headers=GITHUB_REQUEST_HEADERS,
     )
     is_resolved = github_issue_checker.is_issue_resolved(GITHUB_ISSUE_URL)
     assert is_resolved is True
@@ -61,6 +80,7 @@ def test_github_issue_checker__is_issue_resolved__false(
     requests_mock.get(
         GITHUB_API_ISSUE_URL,
         json={"state": "open"},
+        request_headers=GITHUB_REQUEST_HEADERS,
     )
     is_resolved = github_issue_checker.is_issue_resolved(GITHUB_ISSUE_URL)
     assert is_resolved is False
@@ -81,9 +101,63 @@ def test_github_issue_checker__is_issue_resolved__error(
     requests_mock.get(
         GITHUB_API_ISSUE_URL,
         status_code=500,
+        request_headers=GITHUB_REQUEST_HEADERS,
     )
     with pytest.raises(HTTPError):
         _ = github_issue_checker.is_issue_resolved(GITHUB_ISSUE_URL)
+
+
+@pytest.fixture
+def gitlab_issue_checker() -> GitlabIssueChecker:
+    return GitlabIssueChecker(
+        url=GITLAB_URL,
+        token=GITLAB_TOKEN,
+    )
+
+
+def test_gitlab_issue_checker__is_issue_resolved__true(
+    gitlab_issue_checker: GitlabIssueChecker, requests_mock: RequestsMock
+) -> None:
+    requests_mock.get(
+        GITLAB_API_ISSUE_URL,
+        json={"state": "closed"},
+        request_headers=GITLAB_REQUEST_HEADERS,
+    )
+    is_resolved = gitlab_issue_checker.is_issue_resolved(GITLAB_ISSUE_URL)
+    assert is_resolved is True
+
+
+def test_gitlab_issue_checker__is_issue_resolved__false(
+    gitlab_issue_checker: GitlabIssueChecker, requests_mock: RequestsMock
+) -> None:
+    requests_mock.get(
+        GITLAB_API_ISSUE_URL,
+        json={"state": "open"},
+        request_headers=GITLAB_REQUEST_HEADERS,
+    )
+    is_resolved = gitlab_issue_checker.is_issue_resolved(GITLAB_ISSUE_URL)
+    assert is_resolved is False
+
+
+def test_gitlab_issue_checker__is_issue_resolved__no_match(
+    gitlab_issue_checker: GitlabIssueChecker,
+) -> None:
+    is_resolved = gitlab_issue_checker.is_issue_resolved(
+        "https://some.gitlab/someone/something/issues/1234"
+    )
+    assert is_resolved is None
+
+
+def test_gitlab_issue_checker__is_issue_resolved__error(
+    gitlab_issue_checker: GitlabIssueChecker, requests_mock: RequestsMock
+) -> None:
+    requests_mock.get(
+        GITLAB_API_ISSUE_URL,
+        status_code=500,
+        request_headers=GITLAB_REQUEST_HEADERS,
+    )
+    with pytest.raises(HTTPError):
+        _ = gitlab_issue_checker.is_issue_resolved(GITLAB_ISSUE_URL)
 
 
 @pytest.fixture
@@ -133,11 +207,12 @@ def test_issue_checker_manager__is_workaround_redundant__error(
 
 
 @pytest.fixture
-def _set_token_environment_variable(monkeypatch: pytest.MonkeyPatch) -> None:
+def _set_token_environment_variables(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv(GITHUB_AUTHENTICATION_ENV_VAR, GITHUB_TOKEN)
+    monkeypatch.setenv(GITLAB_AUTHENTICATION_ENV_VAR, GITLAB_TOKEN)
 
 
-@pytest.mark.usefixtures("_set_token_environment_variable")
+@pytest.mark.usefixtures("_set_token_environment_variables")
 def test_issue_checker_manager__from_config(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -145,22 +220,32 @@ def test_issue_checker_manager__from_config(
         "workaround_tracker.issue_checker._manager.GithubIssueChecker",
         mock_github_issue_checker := Mock(spec=GithubIssueChecker),
     )
-    _ = IssueCheckerManager.from_config([ISSUE_TRACKER_CONFIG_GITHUB])
+    monkeypatch.setattr(
+        "workaround_tracker.issue_checker._manager.GitlabIssueChecker",
+        mock_gitlab_issue_checker := Mock(spec=GitlabIssueChecker),
+    )
+    _ = IssueCheckerManager.from_config(
+        [ISSUE_TRACKER_CONFIG_GITHUB, ISSUE_TRACKER_CONFIG_GITLAB]
+    )
     mock_github_issue_checker.assert_called_once_with(
         url=f"https://{GITHUB_HOSTNAME}",
         token=GITHUB_TOKEN,
     )
+    mock_gitlab_issue_checker.assert_called_once_with(
+        url=f"https://{GITLAB_HOSTNAME}",
+        token=GITLAB_TOKEN,
+    )
 
 
 @pytest.mark.integration_test
-@pytest.mark.usefixtures("_set_token_environment_variable")
+@pytest.mark.usefixtures("_set_token_environment_variables")
 def test_issue_checker__integration(
     requests_mock: RequestsMock,
 ) -> None:
     requests_mock.get(
         GITHUB_API_ISSUE_URL,
         json={"state": "closed"},
-        request_headers=REQUEST_HEADERS,
+        request_headers=GITHUB_REQUEST_HEADERS,
         headers={"Content-Type": GITHUB_MEDIA_TYPE},
     )
     manager = IssueCheckerManager.from_config([ISSUE_TRACKER_CONFIG_GITHUB])

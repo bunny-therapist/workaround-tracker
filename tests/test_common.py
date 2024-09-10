@@ -23,6 +23,29 @@ from workaround_tracker.common import AuthenticationConfig, Config, IssueTracker
                         host="local.github",
                         authentication=AuthenticationConfig(env="LOCAL_GITHUB_TOKEN"),
                     ),
+                    IssueTrackerConfig(
+                        kind="gitlab",
+                        host="gitlab.com",
+                        authentication=AuthenticationConfig(env="GITLAB_TOKEN"),
+                    ),
+                ],
+            ),
+        ),
+        (
+            "config_1.yaml",
+            Config(
+                scanners=["python"],
+                issue_trackers=[
+                    IssueTrackerConfig(
+                        kind="gitlab",
+                        host="gitlab.com",
+                        authentication=AuthenticationConfig(env="GITLAB_TOKEN"),
+                    ),
+                    IssueTrackerConfig(
+                        kind="gitlab",
+                        host="local.gitlab",
+                        authentication=AuthenticationConfig(env="LOCAL_GITLAB_TOKEN"),
+                    ),
                 ],
             ),
         ),
